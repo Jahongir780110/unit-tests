@@ -1,0 +1,23 @@
+{
+  "name": "unit-tests",
+  "version": "1.0.0",
+  "description": "Custom lodash library with unit tests",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "test:coverage": "jest --coverage"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rolling-scopes-school/jahongir780110-JSFEEN2022.git"
+  },
+  "author": "Jahongir Ismoilov <jahongir780110@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rolling-scopes-school/jahongir780110-JSFEEN2022/issues"
+  },
+  "homepage": "https://github.com/rolling-scopes-school/jahongir780110-JSFEEN2022#readme",
+  "devDependencies": {
+    "jest": "^28.1.3"
+  }
+}
