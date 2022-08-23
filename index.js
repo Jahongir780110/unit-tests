@@ -2,28 +2,17 @@ function push(array, element) {
   array[array.length] = element;
 }
 
-function sliceArray(array, start = 0, end = array.length) {
-  const slicedArray = [];
+function slice(target, start = 0, end = target.length) {
+  const isString = typeof target === "string";
+  let slicedTarget = isString ? "" : [];
 
   for (let i = start; i < end; i++) {
-    if (array[i] !== undefined) {
-      push(slicedArray, array[i]);
+    if (target[i] !== undefined) {
+      isString ? (slicedTarget += target[i]) : push(slicedTarget, target[i]);
     }
   }
 
-  return slicedArray;
-}
-
-function sliceString(str, start = 0, end = str.length) {
-  let slicedString = "";
-
-  for (let i = start; i < end; i++) {
-    if (str[i] !== undefined) {
-      slicedString += str[i];
-    }
-  }
-
-  return slicedString;
+  return slicedTarget;
 }
 
 const _ = {
@@ -32,7 +21,7 @@ const _ = {
     let i = 0;
 
     while (i < arr.length) {
-      push(chunks, sliceArray(arr, i, i + size));
+      push(chunks, slice(arr, i, i + size));
       i += size;
     }
 
@@ -63,37 +52,52 @@ const _ = {
 
   dropWhile: (arr, predicate) => {
     const dropped = [];
+    const type =
+      typeof predicate === "function"
+        ? "function"
+        : predicate instanceof Array
+        ? "array"
+        : typeof predicate === "object"
+        ? "object"
+        : typeof predicate === "string"
+        ? "string"
+        : null;
 
-    if (typeof predicate === "function") {
-      for (let i = 0; i < arr.length; i++) {
-        if (!predicate(arr[i])) {
-          push(dropped, arr[i]);
-        }
-      }
-    } else if (predicate instanceof Array) {
-      for (let i = 0; i < arr.length; i++) {
-        if (arr[i][predicate[0]] !== predicate[1]) {
-          push(dropped, arr[i]);
-        }
-      }
-    } else if (typeof predicate === "object") {
-      for (let i = 0; i < arr.length; i++) {
-        let shouldDrop = true;
-        for (const key in predicate) {
-          if (arr[i][key] !== predicate[key]) {
-            shouldDrop = false;
+    switch (type) {
+      case "function":
+        for (let i = 0; i < arr.length; i++) {
+          if (!predicate(arr[i])) {
+            push(dropped, arr[i]);
           }
         }
-        if (!shouldDrop) {
-          push(dropped, arr[i]);
+        break;
+      case "array":
+        for (let i = 0; i < arr.length; i++) {
+          if (arr[i][predicate[0]] !== predicate[1]) {
+            push(dropped, arr[i]);
+          }
         }
-      }
-    } else if (typeof predicate === "string") {
-      for (let i = 0; i < arr.length; i++) {
-        if (arr[i] !== predicate) {
-          push(dropped, arr[i]);
+        break;
+      case "object":
+        for (let i = 0; i < arr.length; i++) {
+          let shouldDrop = true;
+          for (const key in predicate) {
+            if (arr[i][key] !== predicate[key]) {
+              shouldDrop = false;
+            }
+          }
+          if (!shouldDrop) {
+            push(dropped, arr[i]);
+          }
         }
-      }
+        break;
+      case "string":
+        for (let i = 0; i < arr.length; i++) {
+          if (arr[i] !== predicate) {
+            push(dropped, arr[i]);
+          }
+        }
+        break;
     }
 
     return dropped;
@@ -113,99 +117,143 @@ const _ = {
 
   filter: (arr, predicate) => {
     const filtered = [];
+    const type =
+      typeof predicate === "function"
+        ? "function"
+        : predicate instanceof Array
+        ? "array"
+        : typeof predicate === "object"
+        ? "object"
+        : typeof predicate === "string"
+        ? "string"
+        : null;
 
-    if (typeof predicate === "function") {
-      for (let i = 0; i < arr.length; i++) {
-        if (predicate(arr[i])) {
-          push(filtered, arr[i]);
-        }
-      }
-    } else if (predicate instanceof Array) {
-      for (let i = 0; i < arr.length; i++) {
-        if (arr[i][predicate[0]] === predicate[1]) {
-          push(filtered, arr[i]);
-        }
-      }
-    } else if (typeof predicate === "object") {
-      for (let i = 0; i < arr.length; i++) {
-        let shouldTake = true;
-        for (const key in predicate) {
-          if (arr[i][key] !== predicate[key]) {
-            shouldTake = false;
+    switch (type) {
+      case "function":
+        for (let i = 0; i < arr.length; i++) {
+          if (predicate(arr[i])) {
+            push(filtered, arr[i]);
           }
         }
-        if (shouldTake) {
-          push(filtered, arr[i]);
+        break;
+      case "array":
+        for (let i = 0; i < arr.length; i++) {
+          if (arr[i][predicate[0]] === predicate[1]) {
+            push(filtered, arr[i]);
+          }
         }
-      }
-    } else if (typeof predicate === "string") {
-      for (let i = 0; i < arr.length; i++) {
-        if (arr[i][predicate]) {
-          push(filtered, arr[i]);
+        break;
+      case "object":
+        for (let i = 0; i < arr.length; i++) {
+          let shouldTake = true;
+          for (const key in predicate) {
+            if (arr[i][key] !== predicate[key]) {
+              shouldTake = false;
+            }
+          }
+          if (shouldTake) {
+            push(filtered, arr[i]);
+          }
         }
-      }
+        break;
+      case "string":
+        for (let i = 0; i < arr.length; i++) {
+          if (arr[i][predicate]) {
+            push(filtered, arr[i]);
+          }
+        }
+        break;
     }
 
     return filtered;
   },
 
   find: (arr, predicate) => {
-    if (typeof predicate === "function") {
-      for (let i = 0; i < arr.length; i++) {
-        if (predicate(arr[i])) {
-          return arr[i];
-        }
-      }
-    } else if (predicate instanceof Array) {
-      for (let i = 0; i < arr.length; i++) {
-        if (arr[i][predicate[0]] === predicate[1]) {
-          return arr[i];
-        }
-      }
-    } else if (typeof predicate === "object") {
-      for (let i = 0; i < arr.length; i++) {
-        let shouldAdd = true;
-        for (const key in predicate) {
-          if (arr[i][key] !== predicate[key]) {
-            shouldAdd = false;
+    const type =
+      typeof predicate === "function"
+        ? "function"
+        : predicate instanceof Array
+        ? "array"
+        : typeof predicate === "object"
+        ? "object"
+        : typeof predicate === "string"
+        ? "string"
+        : null;
+
+    switch (type) {
+      case "function":
+        for (let i = 0; i < arr.length; i++) {
+          if (predicate(arr[i])) {
+            return arr[i];
           }
         }
-        if (shouldAdd) {
-          return arr[i];
+        break;
+      case "array":
+        for (let i = 0; i < arr.length; i++) {
+          if (arr[i][predicate[0]] === predicate[1]) {
+            return arr[i];
+          }
         }
-      }
-    } else if (typeof predicate === "string") {
-      for (let i = 0; i < arr.length; i++) {
-        if (arr[i][predicate]) {
-          return arr[i];
+        break;
+      case "object":
+        for (let i = 0; i < arr.length; i++) {
+          let shouldAdd = true;
+          for (const key in predicate) {
+            if (arr[i][key] !== predicate[key]) {
+              shouldAdd = false;
+            }
+          }
+          if (shouldAdd) {
+            return arr[i];
+          }
         }
-      }
+        break;
+      case "string":
+        for (let i = 0; i < arr.length; i++) {
+          if (arr[i][predicate]) {
+            return arr[i];
+          }
+        }
+        break;
     }
 
     return undefined;
   },
 
   includes: (collection, value, fromIndex = 0) => {
-    if (collection instanceof Array) {
-      fromIndex = fromIndex >= 0 ? fromIndex : collection.length + fromIndex;
-      for (let i = fromIndex; i < collection.length; i++) {
-        if (collection[i] === value) {
-          return true;
+    const type =
+      collection instanceof Array
+        ? "array"
+        : typeof collection === "object"
+        ? "object"
+        : typeof collection === "string"
+        ? "string"
+        : null;
+
+    switch (type) {
+      case "array":
+        fromIndex = fromIndex >= 0 ? fromIndex : collection.length + fromIndex;
+        for (let i = fromIndex; i < collection.length; i++) {
+          if (collection[i] === value) {
+            return true;
+          }
         }
-      }
-    } else if (typeof collection === "object") {
-      for (const key in collection) {
-        if (collection[key] === value) {
-          return true;
+        break;
+      case "object":
+        for (const key in collection) {
+          if (collection[key] === value) {
+            return true;
+          }
         }
-      }
-    } else if (typeof collection === "string") {
-      fromIndex = fromIndex >= 0 ? fromIndex : collection.length + fromIndex;
-      for (let i = fromIndex; i < collection.length; i++) {
-        if (sliceString(collection, i, i + value.length) === value) {
-          return true;
+        break;
+      case "string":
+        fromIndex = fromIndex >= 0 ? fromIndex : collection.length + fromIndex;
+        for (let i = fromIndex; i < collection.length; i++) {
+          if (slice(collection, i, i + value.length) === value) {
+            return true;
+          }
         }
-      }
+        break;
     }
 
     return false;
